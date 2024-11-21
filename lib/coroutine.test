@@ -1,0 +1,50 @@
+#! /usr/bin/tclsh
+
+# Copyright	2017-2021	Poor Yorick 
+#	ethereum 0x0b5049C148b00a216B29641ab16953b6060Ef8A6
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Affero General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# A copy of the GNU Affero General Public License is available in the "LICENSE"
+# file, and at <https://www.gnu.org/licenses/agpl-3.0.en.html>. 
+
+source [file join [
+	file dirname [file dirname [file dirname [
+	    file normalize [info script]/...]]]]/devtools/testutilities.tcl]
+
+testsNeedTcl     8.6
+testsNeedTcltest 2.0
+
+package require {chan base}
+package require {chan coroutine}
+package require tcl::chan::string 
+
+
+proc main {} {try {
+    variable done
+
+    test chan-coroutine-configure {} -body {
+	::tcllib::chan::base new chan1
+	::tcllib::chan::coroutine::new chan1
+	chan1 .init [::tcl::chan::string \
+	    {Curiosity governs the first moment}]
+	chan1 read
+    } -cleanup {
+	rename chan1 {}
+    } -result {Curiosity governs the first moment} 
+
+    testsuiteCleanup
+} finally {
+    set done 1
+}}
+
+after 0 coroutine [info cmdcount]_main main  
+vwait [namespace current]::done
